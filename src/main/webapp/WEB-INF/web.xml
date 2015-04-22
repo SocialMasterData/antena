@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+<servlet>
+  <servlet-name>initServlet</servlet-name>
+  <servlet-class>
+    com.socialmdm.antena.servlet.InitServlet
+  </servlet-class>
+</servlet>
+<servlet-mapping>
+  <servlet-name>initServlet</servlet-name>
+  <url-pattern>/init_servlet</url-pattern>
+</servlet-mapping>  
+<servlet>
+  <servlet-name>sendMessageServlet</servlet-name>
+  <servlet-class>
+     com.socialmdm.antena.servlet.SendMessageServlet
+  </servlet-class>
+</servlet>
+<servlet-mapping>
+  <servlet-name>sendMessageServlet</servlet-name>
+  <url-pattern>/send_message</url-pattern>
+</servlet-mapping>
+<servlet>
+  <servlet-name>receiveMessageServlet</servlet-name>
+  <servlet-class>
+     com.socialmdm.antena.servlet.ReceiveMessageServlet
+  </servlet-class>
+</servlet>
+<servlet-mapping>
+  <servlet-name>receiveMessageServlet</servlet-name>
+  <url-pattern>/receive_message</url-pattern>
+</servlet-mapping> 
+<welcome-file-list>
+   <welcome-file>index.html</welcome-file>
+</welcome-file-list>
+</web-app>
