@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Mirrored from responsivewebinc.com/premium/mac5/macadmin/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 31 Jan 2015 09:30:23 GMT -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<!-- Title and other stuffs -->
+<title>Dashboard - MacAdmin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="">
+<meta name="keywords" content="">
+<meta name="author" content="">
+
+
+<!-- Stylesheets -->
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<!-- Font awesome icon -->
+<link rel="stylesheet" href="css/font-awesome.min.css">
+<!-- jQuery UI -->
+<link rel="stylesheet" href="css/jquery-ui.css">
+<!-- Main stylesheet -->
+<link href="css/style.css" rel="stylesheet">
+<!-- Widgets stylesheet -->
+<link href="css/widgets.css" rel="stylesheet">
+
+<!--[if lt IE 9]>
+  <script src="js/html5shiv.js"></script>
+  <![endif]-->
+
+<!-- Favicon -->
+<link rel="shortcut icon" href="img/favicon/favicon.png">
+</head>
+
+<body>
+
+    <div class="navbar navbar-fixed-top bs-docs-nav" role="banner">
+
+        <div class="conjtainer">
+            <!-- Menu button for smallar screens -->
+            <div class="navbar-header">
+                <button class="navbar-toggle btn-navbar" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                    <span>Menu</span>
+                </button>
+                <!-- Site name for smallar screens -->
+                <a href="index.html" class="navbar-brand hidden-lg">MacBeth</a>
+            </div>
+
+
+
+            <!-- Navigation starts -->
+            <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+
+                <ul class="nav navbar-nav">
+
+                    <!-- Upload to server link. Class "dropdown-big" creates big dropdown -->
+                    <li><a href="#" style="font-size: 18px !important;"><font>Socialmdm Antena</font></a></li>
+
+                </ul>
+
+                <!-- Search form -->
+                <form class="navbar-form pull-right" role="search">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search">
+                    </div>
+                </form>
+        </div>
+    </div>
+
+    <!-- Main content starts -->
+
+    <div class="content" style="padding-top: 11px;">
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-dropdown">
+                <a href="#">Navigation</a>
+            </div>
+
+            <!--- Sidebar navigation -->
+            <!-- If the main navigation has sub navigation, then add the class "has_sub" to "li" of main navigation. -->
+            <ul id="nav">
+                <!-- Main menu with font awesome icon -->
+                <li class="open"><a href="index.html"><i class="fa fa-home"></i> Dashboard</a> <!-- Sub menu markup 
+            <ul>
+              <li><a href="#">Submenu #1</a></li>
+              <li><a href="#">Submenu #2</a></li>
+              <li><a href="#">Submenu #3</a></li>
+            </ul>--></li>
+            </ul>
+        </div>
+
+        <!-- Sidebar ends -->
+
+        <!-- Main bar -->
+        <div class="mainbar" style="min-height: 10px;">
+
+            <!-- Page heading -->
+            <div class="page-head">
+                <h2 class="pull-left">
+                    <i class="fa fa-home"></i> Dashboard
+                </h2>
+
+                <!-- Breadcrumb -->
+                <div class="bread-crumb pull-right">
+                    <a href="index.html"><i class="fa fa-home"></i> Home</a>
+                    <!-- Divider -->
+                    <span class="divider">/</span> <a href="#" class="bread-current">Dashboard</a>
+                </div>
+
+                <div class="clearfix"></div>
+
+            </div>
+            <!-- Page heading ends -->
+
+
+
+            <!-- Matter -->
+
+            <div class="matter">
+                <div class="container">
+
+                    <div class="row">
+                        <form class="col-md-5" action="javascript:sendMessage();" role="search">
+                            <div class="form-group">
+                                <div class="col-md-8">
+                                    <input type="text" class="form-control" placeholder="Type here...">
+                                </div>
+                                <div class="col-md-4">
+                                    <input class="form-control" id="search-submit" style="background-color: rgb(18, 161, 228);" type="submit" value="Search">
+                                </div>
+                            </div>
+                        </form>
+                        <div id="search-loader" class="col-md-1" style="margin-left: -30px; display: none;">
+                            <img src="img/loader.gif" alt="">
+                        </div>
+                    </div>
+
+                    <div class="col-md-12">
+                        <div class="widget">
+                            <!-- Widget title -->
+                            <div class="widget-head">
+                                <div class="pull-left">Recent Posts</div>
+                                <div class="widget-icons pull-right">
+                                    <a href="#" class="wminimize"><i class="fa fa-chevron-up"></i></a>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="widget-content">
+                                <!-- Widget content -->
+                                <div class="padd">
+
+
+                                    <ul class="recent" id="response_message">
+
+
+                                        <li>
+                                            <div class="avatar pull-left">
+                                                <img style="height: 38px; width: 38px; border-radius: 999999px;" src="img/twitter.png" alt="">
+                                            </div>
+
+                                            <div class="recent-content">
+                                                <div class="recent-meta">&nbsp;</div>
+                                                <div>Vivamus diam elit diam, consectetur fermentum sed dapibus eget, Vivamus consectetur dapibus adipiscing elit.</div>
+                                                <div class="clearfix"></div>
+                                            </div>
+                                        </li>
+
+
+
+                                        <li>
+                                            <div class="avatar pull-left">
+                                                <img src="img/twitter.png" alt="">
+                                            </div>
+
+                                            <div class="recent-content">
+                                                <div class="recent-meta">&nbsp;</div>
+                                                <div>Vivamus diam elit diam, consectetur fermentum sed dapibus eget, Vivamus consectetur dapibus adipiscing elit.</div>
+                                                <div class="clearfix"></div>
+                                            </div>
+                                        </li>
+
+
+
+                                        <li>
+                                            <div class="avatar pull-left">
+                                                <img src="img/twitter.png" alt="">
+                                            </div>
+
+                                            <div class="recent-content">
+                                                <div class="recent-meta">&nbsp;</div>
+                                                <div>Vivamus diam elit diam, consectetur fermentum sed dapibus eget, Vivamus consectetur dapibus adipiscing elit.</div>
+                                                <div class="clearfix"></div>
+                                            </div>
+                                        </li>
+
+
+                                    </ul>
+
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+
+            <!-- Matter ends -->
+
+        </div>
+
+        <!-- Mainbar ends -->
+        <div class="clearfix"></div>
+
+    </div>
+    <!-- Content ends -->
+
+
+
+    <!-- Footer ends -->
+
+    <!-- Scroll to top -->
+    <span class="totop"><a href="#"><i class="fa fa-chevron-up"></i></a></span>
+
+    <script src="/_ah/channel/jsapi"></script>
+    <script src="js/jquery.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery-ui.min.js"></script>
+    <script src="/js/jquery.cookie.min.js"></script>
+    
+    <script type="text/javascript">
+    
+        $(function () {
+            $('.mainbar').css({ 'min-height': ($(window).height() - 52 ) });
+        });
+        
+        var token = $.cookie("token");
+        
+        if( token == '' || token == undefined || token == null ){
+        	getToken();
+        }
+        
+        function getToken() {
+        	$.ajax({
+                url : '/rest/social/getToken',
+                type : 'GET',
+                success : function(data) {
+                    token = data;
+                    document.cookie="token="+token;
+                    initiateConnection();
+                }
+            });
+        }
+        
+        function initiateConnection() {
+        	onOpened = function() {
+                console.log('channel opened');
+            };
+
+            onMessage = function(data) {
+                $("#response_message").prepend(data.data);
+            }
+
+            onError = function() {
+                console.log('channel error');
+                alert('Error while making channel connection');
+                getToken();
+            }
+
+            onClose = function() {
+                console.log('channel closed');
+                alert('Channel closed, Click ok to reconnect');
+                getToken();
+            }
+
+            channel = new goog.appengine.Channel(token);
+            socket = channel.open();
+            socket.onopen = onOpened;
+            socket.onmessage = onMessage;
+            socket.onerror = onError;
+            socket.onclose = onClose;
+        }
+        
+        function sendMessage() {
+        	$("#search-loader").show();
+        	$("#search-loader").attr('disabled','disabled');
+            var keyword = $("#key").val();
+            $.ajax({
+                url : '/rest/social/search',
+                type : 'POST',
+                data : {
+                    keyword : keyword,
+                    token : token,
+                },
+                success : function(data) {
+                    console.log('success');
+                    $("#search-loader").hide();
+                    $("#search-loader").removeAttr('disabled');
+                }
+            });
+        }
+    </script>
+
+</body>
+
+<!-- Mirrored from responsivewebinc.com/premium/mac5/macadmin/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 31 Jan 2015 09:32:59 GMT -->
+</html>

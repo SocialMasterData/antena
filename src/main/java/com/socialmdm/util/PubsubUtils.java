@@ -1,4 +1,4 @@
-package com.socialmdm.antena.util;
+package com.socialmdm.util;
 
 import java.io.IOException;
 

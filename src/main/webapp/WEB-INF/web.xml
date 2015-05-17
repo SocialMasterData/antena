@@ -1,36 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
-<servlet>
-  <servlet-name>initServlet</servlet-name>
-  <servlet-class>
-    com.socialmdm.antena.servlet.InitServlet
-  </servlet-class>
-</servlet>
-<servlet-mapping>
-  <servlet-name>initServlet</servlet-name>
-  <url-pattern>/init_servlet</url-pattern>
-</servlet-mapping>  
-<servlet>
-  <servlet-name>sendMessageServlet</servlet-name>
-  <servlet-class>
-     com.socialmdm.antena.servlet.SendMessageServlet
-  </servlet-class>
-</servlet>
-<servlet-mapping>
-  <servlet-name>sendMessageServlet</servlet-name>
-  <url-pattern>/send_message</url-pattern>
-</servlet-mapping>
-<servlet>
-  <servlet-name>receiveMessageServlet</servlet-name>
-  <servlet-class>
-     com.socialmdm.antena.servlet.ReceiveMessageServlet
-  </servlet-class>
-</servlet>
-<servlet-mapping>
-  <servlet-name>receiveMessageServlet</servlet-name>
-  <url-pattern>/receive_message</url-pattern>
-</servlet-mapping> 
-<welcome-file-list>
-   <welcome-file>index.html</welcome-file>
-</welcome-file-list>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" version="3.0">
+    <display-name>Socialmdm Web Application</display-name>
+    <distributable />
+    
+    <listener>
+        <listener-class>org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap</listener-class>
+    </listener>
+    
+    <listener>
+         <listener-class>org.jboss.resteasy.plugins.spring.SpringContextLoaderListener</listener-class>
+    </listener>
+    
+    <context-param>
+        <param-name>resteasy.servlet.mapping.prefix</param-name>
+        <param-value>/rest</param-value>
+    </context-param>
+    <servlet>
+        <servlet-name>resteasy-servlet</servlet-name>
+        <servlet-class>org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher</servlet-class>
+        <init-param>
+            <param-name>javax.ws.rs.Application</param-name>
+            <param-value>com.socialmdm.service.WebConfig</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>resteasy-servlet</servlet-name>
+        <url-pattern>/rest/*</url-pattern>
+    </servlet-mapping>
+
+    <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
+    </welcome-file-list>
+
 </web-app>
