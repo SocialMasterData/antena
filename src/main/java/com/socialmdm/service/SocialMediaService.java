@@ -24,10 +24,16 @@ import twitter4j.TwitterStream;
 import twitter4j.TwitterStreamFactory;
 import twitter4j.conf.ConfigurationBuilder;
 
+/**
+ * SocialMediaService for SocialMedia related operations
+ * 
+ * @author naveen
+ *
+ */
 @Controller
-public class GreetingController {
+public class SocialMediaService {
 
-    Logger logger = Logger.getLogger(GreetingController.class);
+    Logger logger = Logger.getLogger(SocialMediaService.class);
 
     private SimpMessagingTemplate messagingTemplate;
     private static PubSubService pubSubService = setPubSubService();
@@ -42,11 +48,11 @@ public class GreetingController {
     }
 
     /**
-     * 
+     * Constructor
      * @param messagingTemplate
      */
     @Autowired
-    public GreetingController(SimpMessagingTemplate messagingTemplate) {
+    public SocialMediaService(SimpMessagingTemplate messagingTemplate) {
         this.messagingTemplate = messagingTemplate;
     }
 
@@ -60,13 +66,11 @@ public class GreetingController {
         String uuid = null;
         try {
             uuid = UUID.randomUUID().toString();
-            logger.info("UUID: "+uuid);
+            logger.info(String.format("UUID: %s", uuid));
             response.getWriter().write(uuid);
             response.getWriter().close();
         } catch (IOException e) {
-            logger.error("Error occured for" + "\n" +
-                    "UUID: " + uuid + "\n" +
-                    "Error Message: " + e.getMessage());
+            logger.error(String.format("Error occured for\n UUID: %s\n Error Message: %s", uuid, e.getMessage()));
         }
     }
 
@@ -95,8 +99,7 @@ public class GreetingController {
             }
 
             if(! requiredStatus) {
-                logger.debug("Keyword: " + keyword);
-                logger.debug("Token (UUID): " + token);
+                logger.debug(String.format("Keyword: %s\n Token (UUID): %s", keyword, token));
 
                 //Create Topic in PubSub
                 final String fullTopicName = pubSubService.createTopic(keyword);
@@ -119,7 +122,7 @@ public class GreetingController {
                 StatusListener listener = new StatusListener(){
                     public void onStatus(Status status) {
                         pushToPubSubThread(fullTopicName, status);
-                        greeting(status, token);
+                        pushToSocket(status, token);
                     }
                     public void onDeletionNotice(StatusDeletionNotice statusDeletionNotice) {}
                     public void onTrackLimitationNotice(int numberOfLimitedStatuses) {}
@@ -152,11 +155,12 @@ public class GreetingController {
     }
 
     /**
+     * Push the status to Socket based on the token
      * 
      * @param status
      * @param token
      */
-    public void greeting(Status status, String token) {
+    public void pushToSocket(Status status, String token) {
         String message =
                 "<li>"
                         + "<div class='avatar pull-left'>"
