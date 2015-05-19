@@ -65,8 +65,8 @@ public final class PubsubUtils {
     }
 
     public static String getAppEndpointUrl() {
-    	System.out.println("the subscrription url==="+getAppSubscriptionName());
-    	String endPointUrl= "https://" + getProjectId() + ".appspot.com/receive_message" +
+        System.out.println("the subscrription url==="+getAppSubscriptionName());
+        String endPointUrl= "https://" + getProjectId() + ".appspot.com/receive_message" +
                 "?token=" + getAppSubscriptionName();
         System.out.println("the endpoint url is"+endPointUrl);
         return endPointUrl;
