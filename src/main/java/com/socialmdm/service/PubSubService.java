@@ -22,6 +22,17 @@ import com.socialmdm.util.PubsubUtils;
  *
  */
 public class PubSubService {
+    
+    private static PubSubService pubSubService;
+
+    private PubSubService(){}
+
+    public static synchronized PubSubService getInstance(){
+        if(pubSubService == null){
+            pubSubService = new PubSubService();
+        }
+        return pubSubService;
+    }
 
     Logger logger = Logger.getLogger(PubSubService.class);
 
@@ -32,7 +43,7 @@ public class PubSubService {
      * @param status
      * @throws Exception
      */
-    public void pushToPubSub(String fullTopicName, Status status) throws Exception {
+    public void pushToPubSub(String fullTopicName, Status status) throws IOException {
         try {
             Pubsub client = PubsubUtils.getClient();
             PubsubMessage pubsubMessage = new PubsubMessage();
@@ -45,8 +56,8 @@ public class PubSubService {
                     .execute();
 
             logger.info(String.format("Successfully pushed to topic %s with response message Id %s", fullTopicName, publishResponse.toString()));
-        } catch (Exception e) {
-            throw new Exception(e);
+        } catch (IOException e) {
+            throw new IOException(e);
         }
     }
 
@@ -58,7 +69,7 @@ public class PubSubService {
      * @return
      * @throws IOException
      */
-    public String createTopic(String keyword) throws IOException {
+    public String createTopic(String keyword) {
         String fullTopicName = Constants.PROJECT_NAME_PREFIX + Constants.PROJECT_NAME + 
                                 Constants.TOPIC_NAME_PREFIX + Constants.TOPIC_NAME_APPEND + keyword;
         try {
@@ -68,7 +79,7 @@ public class PubSubService {
                     .execute();
             logger.info(String.format("A new topic created to publish with the name %s", topicToPublish.getName()));
         } catch (IOException e) {
-            logger.error(String.format("Error while creating topic %s",fullTopicName));
+            logger.error(String.format("Error while creating topic %s \nMessage: %s",fullTopicName, e.getMessage()));
         }
         return fullTopicName;
     }

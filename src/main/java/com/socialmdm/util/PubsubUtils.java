@@ -2,6 +2,8 @@ package com.socialmdm.util;
 
 import java.io.IOException;
 
+import org.apache.log4j.Logger;
+
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.util.Utils;
 import com.google.api.client.http.HttpRequestInitializer;
@@ -18,6 +20,8 @@ import com.google.common.base.Preconditions;
  * Utility class to interact with the Pub/Sub API.
  */
 public final class PubsubUtils {
+    
+    private static final Logger logger = Logger.getLogger(PubsubUtils.class);
 
     private static final String APPLICATION_NAME ="socialmdm-antena";
 
@@ -65,10 +69,10 @@ public final class PubsubUtils {
     }
 
     public static String getAppEndpointUrl() {
-        System.out.println("the subscrription url==="+getAppSubscriptionName());
+        logger.info( String.format("The Subscription url is %s", getAppSubscriptionName()) );
         String endPointUrl= "https://" + getProjectId() + ".appspot.com/receive_message" +
                 "?token=" + getAppSubscriptionName();
-        System.out.println("the endpoint url is"+endPointUrl);
+        logger.info(String.format("The Endpoint url is %s", endPointUrl));
         return endPointUrl;
     }
 

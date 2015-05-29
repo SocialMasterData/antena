@@ -6,19 +6,20 @@ import org.springframework.web.socket.config.annotation.AbstractWebSocketMessage
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 
+import com.socialmdm.util.Constants;
+
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer {
     
 	@Override
 	public void configureMessageBroker(MessageBrokerRegistry config) {
-		config.enableSimpleBroker("/topic");
-		config.setApplicationDestinationPrefixes("/app");
+		config.enableSimpleBroker(Constants.SIMPLE_MESSAGE_BORKER);
+		config.setApplicationDestinationPrefixes(Constants.DESTINATION_PREFIX);
 	}
 
-	@Override
 	public void registerStompEndpoints(StompEndpointRegistry registry) {
-		registry.addEndpoint("/hello").withSockJS();
+		registry.addEndpoint(Constants.ENDPOINT).withSockJS();
 	}
 
 }

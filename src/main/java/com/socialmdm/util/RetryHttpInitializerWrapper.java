@@ -44,7 +44,6 @@ public class RetryHttpInitializerWrapper implements HttpRequestInitializer {
         this.sleeper = sleeper;
     }
 
-    @Override
     public void initialize(HttpRequest request) {
         request.setReadTimeout(2 * 60000); // 2 minutes read timeout
         final HttpUnsuccessfulResponseHandler backoffHandler =
@@ -54,7 +53,6 @@ public class RetryHttpInitializerWrapper implements HttpRequestInitializer {
         request.setInterceptor(wrappedCredential);
         request.setUnsuccessfulResponseHandler(
                 new HttpUnsuccessfulResponseHandler() {
-                    @Override
                     public boolean handleResponse(
                             HttpRequest request,
                             HttpResponse response,

@@ -14,7 +14,6 @@ public class Application extends SpringBootServletInitializer{
     }
 
     public static void main(String[] args) {
-        System.out.println("Main entered ==== main");
         SpringApplication.run(Application.class, args);
     }
     

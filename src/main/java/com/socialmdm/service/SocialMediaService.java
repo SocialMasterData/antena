@@ -13,8 +13,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.socialmdm.util.Constants;
-
 import twitter4j.FilterQuery;
 import twitter4j.StallWarning;
 import twitter4j.Status;
@@ -23,6 +21,9 @@ import twitter4j.StatusListener;
 import twitter4j.TwitterStream;
 import twitter4j.TwitterStreamFactory;
 import twitter4j.conf.ConfigurationBuilder;
+
+import com.google.api.client.util.Strings;
+import com.socialmdm.util.Constants;
 
 /**
  * SocialMediaService for SocialMedia related operations
@@ -36,16 +37,7 @@ public class SocialMediaService {
     Logger logger = Logger.getLogger(SocialMediaService.class);
 
     private SimpMessagingTemplate messagingTemplate;
-    private static PubSubService pubSubService = setPubSubService();
     private static TwitterStream twitterStream = null;
-
-    /**
-     * 
-     * @return
-     */
-    static PubSubService setPubSubService() {
-        return new PubSubService();
-    }
 
     /**
      * Constructor
@@ -73,25 +65,26 @@ public class SocialMediaService {
             logger.error(String.format("Error occured for\n UUID: %s\n Error Message: %s", uuid, e.getMessage()));
         }
     }
-
+    
     /**
      * Search the twitter with the given keyword
      * 
      * @param keyword
      * @param token
      * @param response
+     * @throws IOException 
      */
     @RequestMapping("/search")
-    public void search(@PathParam("keyword") final String keyword,@PathParam("token") final String token, HttpServletResponse response) {
+    public void search(@PathParam("keyword") final String keyword,@PathParam("token") final String token, HttpServletResponse response) throws IOException {
         try {
             boolean requiredStatus = false;
-            if( keyword == null || keyword.equals("") ) {
+            if( Strings.isNullOrEmpty(keyword) ) {
                 requiredStatus = true;
                 logger.warn("Keyword cannot be null");
                 response.getWriter().write("Keyword cannot be null");
                 response.getWriter().close();
             }
-            if( token == null || token.equals("") ) {
+            if( Strings.isNullOrEmpty(token) ) {
                 requiredStatus = true;
                 logger.warn("Token cannot be null");
                 response.getWriter().write("Please reload your webpage");
@@ -102,7 +95,7 @@ public class SocialMediaService {
                 logger.debug(String.format("Keyword: %s\n Token (UUID): %s", keyword, token));
 
                 //Create Topic in PubSub
-                final String fullTopicName = pubSubService.createTopic(keyword);
+                final String fullTopicName = PubSubService.getInstance().createTopic(keyword);
                 
                 // Shutdown the previous twitterStream if there is any, Twitter allows only one open connection from an account
                 if( twitterStream != null ) {
@@ -121,19 +114,26 @@ public class SocialMediaService {
                 // TwitterStream Status Listener
                 StatusListener listener = new StatusListener(){
                     public void onStatus(Status status) {
-                        pushToPubSubThread(fullTopicName, status);
-                        pushToSocket(status, token);
+                        if( !Strings.isNullOrEmpty(fullTopicName) && status != null ) {
+                            // Need to decide on this Prediction Algorithm logic
+                            /*if( PredictionService.predict(status.getText()).equals("Not_Spam") ) {
+                                pushToPubSubThread(fullTopicName, status);
+                                pushToSocket(status, token);
+                            }*/
+                            pushToPubSubThread(fullTopicName, status);
+                            pushToSocket(status, token);
+                        }else {
+                            logger.error("fullTopicName or status is NullOrEmpty");
+                        }
                     }
                     public void onDeletionNotice(StatusDeletionNotice statusDeletionNotice) {}
                     public void onTrackLimitationNotice(int numberOfLimitedStatuses) {}
                     public void onException(Exception ex) {
                         logger.error(String.format("Twiiter Stream exception %s",ex.getMessage()));
                     }
-                    @Override
                     public void onScrubGeo(long arg0, long arg1) {
                         // TODO Auto-generated method stub
                     }
-                    @Override
                     public void onStallWarning(StallWarning arg0) {
                         // TODO Auto-generated method stub
                     }
@@ -146,10 +146,10 @@ public class SocialMediaService {
                 fq.track(new String[] {"#"+ keyword});
                 fq.language(new String[]{"en"});
                 twitterStream.filter(fq);
-
+                
                 logger.info(String.format("TwitterStream successfully started for\n Keyword: %s \n Token (UUID): %s",keyword, token));
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             logger.error(String.format("Error occured for\n Keyword: %s \n Token (UUID): %s \n Error Message: %s", keyword, token, e.getMessage()));
         }
     }
@@ -186,10 +186,9 @@ public class SocialMediaService {
      */
     public void pushToPubSubThread(final String fullTopicName, final Status status) {
         Thread thread = new Thread(new Runnable() {
-            @Override
             public void run() {
                 try {
-                    pubSubService.pushToPubSub(fullTopicName, status);
+                    PubSubService.getInstance().pushToPubSub(fullTopicName, status);
                 } catch (Exception e) {
                     logger.error(String.format("Error occured while pushing to PubSub: %s", e.getMessage()));
                 }
