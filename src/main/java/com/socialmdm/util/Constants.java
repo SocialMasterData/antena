@@ -14,6 +14,7 @@ public final class Constants {
     public static String PROJECT_NAME = "socialmdm-antena/";
     public static String TOPIC_NAME_PREFIX = "topics/";
     public static String TOPIC_NAME_APPEND = "topic-";
+    public static String TOPIC_SPAMFREE_APPEND = "-spamfree";
     
     // Twitter Credentials
     public static String OAUTH_CONSUMER_KEY = "22ZmdXF53Ve4LKNUCkgHSm4jE";
@@ -28,5 +29,6 @@ public final class Constants {
     public static final String STORAGE_DATA_LOCATION = "socialmdm-antena.appspot.com/language_id.txt";
     public static final String USER_CREDENTIAL_STORE_LOC = ".store/prediction_sample";
     public static final String USER_HOME = "user.home";
+    public static final String PREDICTION_NOT_SPAM = "Not_Spam";
 
 }

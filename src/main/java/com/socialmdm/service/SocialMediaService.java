@@ -2,13 +2,13 @@ package com.socialmdm.service;
 
 import java.io.IOException;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.websocket.server.PathParam;
 
-import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,20 +24,23 @@ import twitter4j.conf.ConfigurationBuilder;
 
 import com.google.api.client.util.Strings;
 import com.socialmdm.util.Constants;
+import com.socialmdm.util.LoggerUtil;
 
 /**
  * SocialMediaService for SocialMedia related operations
  * 
- * @author naveen
+ * @author Naveen
  *
  */
 @Controller
 public class SocialMediaService {
-
-    Logger logger = Logger.getLogger(SocialMediaService.class);
+    
 
     private SimpMessagingTemplate messagingTemplate;
     private static TwitterStream twitterStream = null;
+
+    // Static thread pool with maximum thread count of 10
+    private static ExecutorService executorService = Executors.newFixedThreadPool(10);
 
     /**
      * Constructor
@@ -58,14 +61,14 @@ public class SocialMediaService {
         String uuid = null;
         try {
             uuid = UUID.randomUUID().toString();
-            logger.info(String.format("UUID: %s", uuid));
+            LoggerUtil.writeInfo(String.format("UUID: %s", uuid), this.getClass());
             response.getWriter().write(uuid);
             response.getWriter().close();
         } catch (IOException e) {
-            logger.error(String.format("Error occured for\n UUID: %s\n Error Message: %s", uuid, e.getMessage()));
+            LoggerUtil.writeError(String.format("Error occured for\n UUID: %s\n Error Message: %s", uuid, e.getMessage()), this.getClass());
         }
     }
-    
+
     /**
      * Search the twitter with the given keyword
      * 
@@ -77,80 +80,83 @@ public class SocialMediaService {
     @RequestMapping("/search")
     public void search(@PathParam("keyword") final String keyword,@PathParam("token") final String token, HttpServletResponse response) throws IOException {
         try {
-            boolean requiredStatus = false;
             if( Strings.isNullOrEmpty(keyword) ) {
-                requiredStatus = true;
-                logger.warn("Keyword cannot be null");
+                LoggerUtil.writeWarn("Keyword cannot be null", this.getClass());
                 response.getWriter().write("Keyword cannot be null");
                 response.getWriter().close();
+                return;
             }
             if( Strings.isNullOrEmpty(token) ) {
-                requiredStatus = true;
-                logger.warn("Token cannot be null");
+                LoggerUtil.writeWarn("Token cannot be null", this.getClass());
                 response.getWriter().write("Please reload your webpage");
                 response.getWriter().close();
+                return;
             }
 
-            if(! requiredStatus) {
-                logger.debug(String.format("Keyword: %s\n Token (UUID): %s", keyword, token));
+            LoggerUtil.writeDebug(String.format("Keyword: %s\n Token (UUID): %s", keyword, token), this.getClass());
 
-                //Create Topic in PubSub
-                final String fullTopicName = PubSubService.getInstance().createTopic(keyword);
-                
-                // Shutdown the previous twitterStream if there is any, Twitter allows only one open connection from an account
-                if( twitterStream != null ) {
-                    twitterStream.cleanUp(); // shutdown internal stream consuming thread
-                    twitterStream.shutdown(); // Shuts down internal dispatcher thread shared by all TwitterStream instances.
-                }
+            //Create Topic in PubSub
+            final String fullTopicName = PubSubService.getInstance().createTopic(keyword);
+            final String fullTopicNameSpamFree = PubSubService.getInstance().createTopic(keyword + Constants.TOPIC_SPAMFREE_APPEND);
 
-                // Twitter Configuration
-                ConfigurationBuilder cb = new ConfigurationBuilder();
-                cb.setDebugEnabled(true)
-                .setOAuthConsumerKey(Constants.OAUTH_CONSUMER_KEY)
-                .setOAuthConsumerSecret(Constants.OAUTH_CONSUMER_SECRET)
-                .setOAuthAccessToken(Constants.OAUTH_ACCESS_TOKEN)
-                .setOAuthAccessTokenSecret(Constants.OAUTH_ACCESS_TOKEN_SECRET);
+            // Shutdown the previous twitterStream if there is any, Twitter allows only one open connection from an account
+            closeTwitterStream();
 
-                // TwitterStream Status Listener
-                StatusListener listener = new StatusListener(){
-                    public void onStatus(Status status) {
-                        if( !Strings.isNullOrEmpty(fullTopicName) && status != null ) {
-                            // Need to decide on this Prediction Algorithm logic
-                            /*if( PredictionService.predict(status.getText()).equals("Not_Spam") ) {
-                                pushToPubSubThread(fullTopicName, status);
-                                pushToSocket(status, token);
-                            }*/
-                            pushToPubSubThread(fullTopicName, status);
+            // Twitter Configuration
+            ConfigurationBuilder cb = new ConfigurationBuilder();
+            cb.setDebugEnabled(true)
+            .setOAuthConsumerKey(Constants.OAUTH_CONSUMER_KEY)
+            .setOAuthConsumerSecret(Constants.OAUTH_CONSUMER_SECRET)
+            .setOAuthAccessToken(Constants.OAUTH_ACCESS_TOKEN)
+            .setOAuthAccessTokenSecret(Constants.OAUTH_ACCESS_TOKEN_SECRET);
+
+            // TwitterStream Status Listener
+            StatusListener listener = new StatusListener(){
+                public void onStatus(Status status) {
+                    if( !Strings.isNullOrEmpty(fullTopicName) && status != null ) {
+                        pushToPubSubThread(fullTopicName, status);
+                        if( PredictionService.getInstance().predict(status.getText()).equals(Constants.PREDICTION_NOT_SPAM) ) {
+                            pushToPubSubThread(fullTopicNameSpamFree, status);
                             pushToSocket(status, token);
-                        }else {
-                            logger.error("fullTopicName or status is NullOrEmpty");
                         }
+                    }else {
+                        LoggerUtil.writeError("fullTopicName or status is NullOrEmpty", this.getClass());
                     }
-                    public void onDeletionNotice(StatusDeletionNotice statusDeletionNotice) {}
-                    public void onTrackLimitationNotice(int numberOfLimitedStatuses) {}
-                    public void onException(Exception ex) {
-                        logger.error(String.format("Twiiter Stream exception %s",ex.getMessage()));
-                    }
-                    public void onScrubGeo(long arg0, long arg1) {
-                        // TODO Auto-generated method stub
-                    }
-                    public void onStallWarning(StallWarning arg0) {
-                        // TODO Auto-generated method stub
-                    }
-                };
+                }
+                public void onDeletionNotice(StatusDeletionNotice statusDeletionNotice) {}
+                public void onTrackLimitationNotice(int numberOfLimitedStatuses) {}
+                public void onException(Exception ex) {
+                    LoggerUtil.writeError(String.format("Twiiter Stream exception %s",ex), this.getClass());
+                }
+                public void onScrubGeo(long arg0, long arg1) {
+                    // TODO Auto-generated method stub
+                }
+                public void onStallWarning(StallWarning arg0) {
+                    // TODO Auto-generated method stub
+                }
+            };
 
-                twitterStream = new TwitterStreamFactory(cb.build()).getInstance();
-                twitterStream.addListener(listener);
+            twitterStream = new TwitterStreamFactory(cb.build()).getInstance();
+            twitterStream.addListener(listener);
 
-                FilterQuery fq = new FilterQuery();
-                fq.track(new String[] {"#"+ keyword});
-                fq.language(new String[]{"en"});
-                twitterStream.filter(fq);
-                
-                logger.info(String.format("TwitterStream successfully started for\n Keyword: %s \n Token (UUID): %s",keyword, token));
-            }
-        } catch (IOException e) {
-            logger.error(String.format("Error occured for\n Keyword: %s \n Token (UUID): %s \n Error Message: %s", keyword, token, e.getMessage()));
+            FilterQuery fq = new FilterQuery();
+            fq.track(new String[] {"#"+ keyword});
+            fq.language(new String[]{"en"});
+            twitterStream.filter(fq);
+
+            LoggerUtil.writeInfo(String.format("TwitterStream successfully started for\n Keyword: %s \n Token (UUID): %s",keyword, token), this.getClass());
+        } catch (IOException ex) {
+            LoggerUtil.writeError(String.format("Error occured for\n Keyword: %s \n Token (UUID): %s \n Error Message: %s", keyword, token, ex), this.getClass());
+        }
+    }
+
+    /**
+     * Close TwitterStream if it's not null
+     */
+    public void closeTwitterStream() {
+        if( twitterStream != null ) {
+            twitterStream.cleanUp(); // shutdown internal stream consuming thread
+            twitterStream.shutdown(); // Shuts down internal dispatcher thread shared by all TwitterStream instances.
         }
     }
 
@@ -174,7 +180,7 @@ public class SocialMediaService {
                         + "</div>"
                         + "<div class='clearfix'></div>"
                         + "</div>"
-                    + "</li>";
+                        + "</li>";
         this.messagingTemplate.convertAndSend( "/topic/"+token , message);
     }
 
@@ -185,16 +191,15 @@ public class SocialMediaService {
      * @param status
      */
     public void pushToPubSubThread(final String fullTopicName, final Status status) {
-        Thread thread = new Thread(new Runnable() {
+        executorService.submit(new Runnable() {
             public void run() {
                 try {
                     PubSubService.getInstance().pushToPubSub(fullTopicName, status);
-                } catch (Exception e) {
-                    logger.error(String.format("Error occured while pushing to PubSub: %s", e.getMessage()));
+                } catch (Exception ex) {
+                    LoggerUtil.writeError(String.format("Error occured while pushing to PubSub: %s", ex), this.getClass());
                 }
             }
         });
-        thread.start();
     }
 
 }

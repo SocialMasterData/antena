@@ -5,8 +5,6 @@ import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
 
-import org.apache.log4j.Logger;
-
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
@@ -23,40 +21,41 @@ import com.google.api.services.prediction.model.Input;
 import com.google.api.services.prediction.model.Input.InputInput;
 import com.google.api.services.prediction.model.Output;
 import com.socialmdm.util.Constants;
+import com.socialmdm.util.LoggerUtil;
 
 public class PredictionService {
-
-    private static final Logger logger = Logger.getLogger(PredictionService.class);
+    
+    // Singleton object
+    private static PredictionService predictionService;
+    private PredictionService(){}
+    public static synchronized PredictionService getInstance() {
+        if( predictionService == null ) {
+            predictionService = new PredictionService();
+        }
+        return predictionService;
+    }
 
     /** Directory to store user credentials. */
     private static final java.io.File DATA_STORE_DIR =
             new java.io.File(System.getProperty(Constants.USER_HOME), Constants.USER_CREDENTIAL_STORE_LOC);
 
-    /**
-     * Global instance of the {@link DataStoreFactory}. The best practice is to make it a single
-     * globally shared instance across your application.
-     */
     private static FileDataStoreFactory dataStoreFactory = null;
 
-    /** Global instance of the HTTP transport. */
     private static HttpTransport httpTransport = null;
 
-    /** Global instance of the JSON factory. */
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
     /** Authorizes the installed application to access user's protected data. */
-    private static Credential authorize() throws IOException {
+    private Credential authorize() throws IOException {
         try {
             // load client secrets
-            GoogleClientSecrets clientSecrets;
-
-            clientSecrets = GoogleClientSecrets.load(JSON_FACTORY,
+            GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY,
                     new InputStreamReader(PredictionService.class.getResourceAsStream("/client_secrets.json")));
             if (clientSecrets.getDetails().getClientId().startsWith("Enter")
                     || clientSecrets.getDetails().getClientSecret().startsWith("Enter ")) {
-                logger.info( String.format("Enter Client ID and Secret from %s into %s", 
+                LoggerUtil.writeInfo(String.format("Enter Client ID and Secret from %s into %s", 
                         "https://code.google.com/apis/console/?api=prediction", 
-                        "/src/main/resources/client_secrets.json") );
+                        "/src/main/resources/client_secrets.json"), this.getClass());
             }
             // set up authorization code flow
             GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
@@ -70,29 +69,35 @@ public class PredictionService {
         }
     } 
 
-    public static String predict(String text) {
+    public String predict(String text) {
+        String predictedLabel = null;
         try {
-            httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-            dataStoreFactory = new FileDataStoreFactory(DATA_STORE_DIR);
+            if( httpTransport == null ) {
+                httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+            }
+            if( dataStoreFactory == null ) {
+                dataStoreFactory = new FileDataStoreFactory(DATA_STORE_DIR);
+            }
+            
             // authorization
             Credential credential = authorize();
-            Prediction prediction = new Prediction.Builder(
-                    httpTransport, JSON_FACTORY, credential).setApplicationName(Constants.APPLICATION_NAME).build();
+            Prediction prediction = new Prediction.Builder(httpTransport, JSON_FACTORY, credential).setApplicationName(Constants.APPLICATION_NAME).build();
 
             Input input = new Input();
             InputInput inputInput = new InputInput();
             inputInput.setCsvInstance(Collections.<Object>singletonList(text));
             input.setInput(inputInput);
             Output output = prediction.trainedmodels().predict( Constants.PROJECT_ID, Constants.MODEL_ID, input).execute();
-            logger.info( String.format("Text: %s", text) );
-            logger.info( String.format("Predicted: %s", output.getOutputLabel()) );
-            return output.getOutputLabel();
-        } catch (IOException e) {
-            logger.error( String.format("Error occured while Prediction for Text: %s \nError message: %s", text, e.getMessage()) );
+            predictedLabel = output.getOutputLabel();
+            LoggerUtil.writeInfo(String.format("Text: %s", text), this.getClass());
+            LoggerUtil.writeInfo(String.format("Predicted: %s", predictedLabel), this.getClass());
+            return predictedLabel;
+        } catch (IOException ioEx) {
+            LoggerUtil.writeError(String.format("Error occured while Prediction for Text: %s \nError message: %s", text, ioEx), this.getClass());
         } catch (GeneralSecurityException ge) {
-            logger.error( String.format("Error occured while Prediction for Text: %s \nError message: %s", text, ge.getMessage()) );
+            LoggerUtil.writeError(String.format("Error occured while Prediction for Text: %s \nError message: %s", text, ge), this.getClass());
         }
-        return null;
+        return predictedLabel;
     }
 
 }

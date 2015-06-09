@@ -2,8 +2,6 @@ package com.socialmdm.service;
 
 import java.io.IOException;
 
-import org.apache.log4j.Logger;
-
 import twitter4j.Status;
 
 import com.google.api.services.pubsub.Pubsub;
@@ -13,6 +11,7 @@ import com.google.api.services.pubsub.model.PubsubMessage;
 import com.google.api.services.pubsub.model.Topic;
 import com.google.common.collect.ImmutableList;
 import com.socialmdm.util.Constants;
+import com.socialmdm.util.LoggerUtil;
 import com.socialmdm.util.PubsubUtils;
 
 /**
@@ -23,18 +22,15 @@ import com.socialmdm.util.PubsubUtils;
  */
 public class PubSubService {
     
+    
     private static PubSubService pubSubService;
-
     private PubSubService(){}
-
     public static synchronized PubSubService getInstance(){
         if(pubSubService == null){
             pubSubService = new PubSubService();
         }
         return pubSubService;
     }
-
-    Logger logger = Logger.getLogger(PubSubService.class);
 
     /**
      * Push to PubSub 
@@ -55,7 +51,7 @@ public class PubSubService {
                     .publish(fullTopicName, publishRequest)
                     .execute();
 
-            logger.info(String.format("Successfully pushed to topic %s with response message Id %s", fullTopicName, publishResponse.toString()));
+            LoggerUtil.writeInfo(String.format("Successfully pushed to topic %s with response message Id %s", fullTopicName, publishResponse.toString()), this.getClass());
         } catch (IOException e) {
             throw new IOException(e);
         }
@@ -77,9 +73,9 @@ public class PubSubService {
             Topic topicToPublish = client.projects().topics()
                     .create( fullTopicName, new Topic())
                     .execute();
-            logger.info(String.format("A new topic created to publish with the name %s", topicToPublish.getName()));
+            LoggerUtil.writeInfo(String.format("A new topic created to publish with the name %s", topicToPublish.getName()), this.getClass());
         } catch (IOException e) {
-            logger.error(String.format("Error while creating topic %s \nMessage: %s",fullTopicName, e.getMessage()));
+            LoggerUtil.writeInfo(String.format("Error while creating topic %s \nMessage: %s",fullTopicName, e.getMessage()), this.getClass());
         }
         return fullTopicName;
     }
